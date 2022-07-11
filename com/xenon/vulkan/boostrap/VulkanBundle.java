@@ -47,5 +47,22 @@ public final class VulkanBundle {
         )
             throw VkError.log("VulkanedBundle has got some missing fields: " + this);
     }
+    
+    @Override
+    public String toString() {
+        return "VulkanBundle{" +
+                "window=" + window +
+                ", appInfo=" + appInfo +
+                ", debugCreateInfo=" + debugCreateInfo +
+                ", allocationCallbacks=" + allocationCallbacks +
+                ", requestedLayers=" + requestedLayers +
+                ", deviceExtensions=" + deviceExtensions +
+                ", gpuFeatures=" + gpuFeatures +
+                ", queueFeatures=" + queueFeatures +
+                ", GPUName='" + GPUName + '\'' +
+                ", GPUVendor='" + GPUVendor + '\'' +
+                ", swapChain=" + swapChain +
+                '}';
+    }
 
 }
