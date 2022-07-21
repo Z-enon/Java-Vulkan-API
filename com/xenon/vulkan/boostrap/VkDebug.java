@@ -79,7 +79,8 @@ public final class VkDebug {
     }
 
     @Once
-    public static long setupDebug(VulkanBundle bundle, VkInstance instance) {
+    public static long setupDebug(VulkanBundle bundle) {
+        VkInstance instance = bundle.instance;
         if (ENABLED) try (MemoryStack stack = stackPush()) {
             LongBuffer pDebugMessenger = stack.longs(VK_NULL_HANDLE);
 

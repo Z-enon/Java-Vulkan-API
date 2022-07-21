@@ -1,5 +1,7 @@
 package com.xenon.vulkan.boostrap;
 
+import com.xenon.vulkan.info.GPUFeaturesCreateInfo;
+import com.xenon.vulkan.info.QueueFeaturesCreateInfo;
 import org.lwjgl.PointerBuffer;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.vulkan.*;
@@ -7,6 +9,7 @@ import org.lwjgl.vulkan.*;
 import java.nio.IntBuffer;
 import java.util.*;
 
+import static com.xenon.vulkan.boostrap.XeUtils.checkVK;
 import static org.lwjgl.system.MemoryStack.stackPush;
 import static org.lwjgl.vulkan.KHRSurface.vkGetPhysicalDeviceSurfaceSupportKHR;
 import static org.lwjgl.vulkan.VK10.*;
@@ -16,13 +19,15 @@ public final class VkLogicalDevices {
 
 
     @Once
-    public static VkDevice create(VulkanBundle bundle, XeGPU gpu, long surface_handle) {
+    public static VkDevice create(VulkanBundle bundle) {
+        XeGPU gpu = bundle.gpu;
         VkPhysicalDevice physicalDevice = gpu.gpu();
-        QueueFeatures filteringQueueFamilyFeatures = bundle.queueFeatures;
-        GPUFeatures gpuFeatures = bundle.gpuFeatures;
+        QueueFeaturesCreateInfo filteringQueueFamilyFeatures = bundle.queueFeatures;
+        GPUFeaturesCreateInfo gpuFeatures = bundle.gpuFeatures;
         Collection<String> layers = bundle.requestedLayers;
         Collection<String> deviceExtensions = bundle.deviceExtensions;
         VkAllocationCallbacks callbacks = bundle.allocationCallbacks;
+        long surface_handle = bundle.surface;
 
         try (MemoryStack stack = stackPush()) {
             // queue families filtering
@@ -82,8 +87,7 @@ public final class VkLogicalDevices {
             createInfo.ppEnabledLayerNames(XeUtils.pointerbuffer(stack, layers));
 
             PointerBuffer pDevice = stack.pointers(VK_NULL_HANDLE);
-            if (vkCreateDevice(physicalDevice, createInfo, callbacks, pDevice) != VK_SUCCESS)
-                throw VkError.log("Failed to create logical device");
+            checkVK(vkCreateDevice(physicalDevice, createInfo, callbacks, pDevice), "Failed to create logical device");
 
             VkDevice device = new VkDevice(pDevice.get(0), physicalDevice, createInfo);
 

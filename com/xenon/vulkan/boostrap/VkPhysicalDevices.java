@@ -7,6 +7,7 @@ import org.lwjgl.vulkan.*;
 import java.nio.IntBuffer;
 import java.util.Locale;
 
+import static com.xenon.vulkan.boostrap.XeUtils.checkCount;
 import static org.lwjgl.system.MemoryStack.stackPush;
 import static org.lwjgl.vulkan.VK10.*;
 import static org.lwjgl.vulkan.VK10.vkEnumeratePhysicalDevices;
@@ -33,7 +34,8 @@ public final class VkPhysicalDevices {
      * <code>physicalDevices.foreach(d -> if (d.name.contains(GPU_name)) {selectDevice(d);break;})</code>
      */
     @Once
-    public static XeGPU pick(VulkanBundle bundle, VkInstance instance) {
+    public static XeGPU pick(VulkanBundle bundle) {
+        VkInstance instance = bundle.instance;
         String requestedGPUName = bundle.GPUName;
 
         try (MemoryStack stack = stackPush()) {
@@ -42,8 +44,7 @@ public final class VkPhysicalDevices {
             vkEnumeratePhysicalDevices(instance, countB, null);
             int count = countB.get(0);
 
-            if (count == 0)
-                throw VkError.log("No GPU supporting Vulkan");
+            checkCount(count, "No GPU supporting Vulkan");
 
             PointerBuffer devices = stack.mallocPointer(count);
             vkEnumeratePhysicalDevices(instance, countB, devices);

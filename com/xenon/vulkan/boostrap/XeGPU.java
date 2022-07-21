@@ -1,5 +1,6 @@
 package com.xenon.vulkan.boostrap;
 
+import com.xenon.vulkan.info.GPUFeaturesCreateInfo;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.vulkan.*;
 
@@ -13,14 +14,20 @@ import static org.lwjgl.vulkan.VK10.*;
 import static org.lwjgl.vulkan.VK10.vkEnumerateDeviceExtensionProperties;
 
 /**
+ * Container for VkPhysicalDevice and its name
  * @author Zenon
  */
 public record XeGPU(VkPhysicalDevice gpu, String name) {
 
+    /**
+     * Validates the selected GPU with the supplied GPUFeatures and the requested device extensions.
+     * @param bundle the container
+     * @return this instance
+     */
     public XeGPU validate(VulkanBundle bundle) {
         VkPhysicalDevice device = gpu();
         Collection<String> deviceExtensions = bundle.deviceExtensions;
-        GPUFeatures gpuFeatures = bundle.gpuFeatures;
+        GPUFeaturesCreateInfo gpuFeatures = bundle.gpuFeatures;
 
 
         try (MemoryStack stack = stackPush()) {

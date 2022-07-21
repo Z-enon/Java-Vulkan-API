@@ -1,45 +1,44 @@
 package com.xenon.vulkan.boostrap;
 
+import com.xenon.vulkan.BiIntConsumer;
 import com.xenon.vulkan.Disposable;
 import org.lwjgl.glfw.GLFWImage;
 import org.lwjgl.glfw.GLFWVidMode;
 import org.lwjgl.system.MemoryStack;
-import org.lwjgl.vulkan.VkAllocationCallbacks;
-import org.lwjgl.vulkan.VkInstance;
 
 import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
 import java.nio.LongBuffer;
 
+import static com.xenon.vulkan.boostrap.XeUtils.checkPtr;
+import static com.xenon.vulkan.boostrap.XeUtils.checkVK;
 import static org.lwjgl.glfw.GLFW.*;
+import static org.lwjgl.glfw.GLFW.glfwSetFramebufferSizeCallback;
 import static org.lwjgl.glfw.GLFWVulkan.glfwCreateWindowSurface;
 import static org.lwjgl.stb.STBImage.stbi_image_free;
 import static org.lwjgl.stb.STBImage.stbi_load;
 import static org.lwjgl.system.MemoryStack.stackPush;
 import static org.lwjgl.vulkan.VK10.VK_NULL_HANDLE;
-import static org.lwjgl.vulkan.VK10.VK_SUCCESS;
 
 /**
  * @author Zenon
  */
 public class VkWindow implements Disposable {
 
+
     public static VkWindow create(int width, int height, String name) {
         return new VkWindow(width, height, name);
     }
 
-    protected final long handle;
+    public final long handle;
     protected int width, height;
-    protected long surface;
-    protected VkAllocationCallbacks allocationCallbacks;
 
     protected VkWindow(int width, int height, String name) {
         glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
-        glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
+        glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
 
         handle = glfwCreateWindow(width, height, name, 0, 0);
-        if (handle == 0)
-            throw new RuntimeException("Failed to create GLFW Window.");
+        checkPtr(handle, "Failed to create GLFW Window.");
 
         try (MemoryStack stack  = stackPush()) {
             IntBuffer w = stack.mallocInt(1);
@@ -48,6 +47,15 @@ public class VkWindow implements Disposable {
             this.width = w.get(0);
             this.height = h.get(0);
         }
+    }
+
+    @SuppressWarnings("resource")
+    public void setResizeCallback(BiIntConsumer callback) {
+        glfwSetFramebufferSizeCallback(handle, (window, wi, he) -> {
+            this.width = wi;
+            this.height = he;
+            callback.consume(wi, he);
+        });
     }
 
     /**
@@ -87,11 +95,11 @@ public class VkWindow implements Disposable {
         }
     }
 
-    public static long createSurface(VulkanBundle bundle, VkInstance instance) {
+    public static long createSurface(VulkanBundle bundle) {
         try (MemoryStack stack = stackPush()) {
             LongBuffer lb = stack.longs(VK_NULL_HANDLE);
-            if (glfwCreateWindowSurface(instance, bundle.window.handle, bundle.allocationCallbacks, lb) != VK_SUCCESS)
-                throw VkError.log("Failed to create vulkan surface");
+            checkVK(glfwCreateWindowSurface(bundle.instance, bundle.window.handle, bundle.allocationCallbacks, lb),
+                    "Failed to create vulkan surface");
             return lb.get(0);
         }
     }

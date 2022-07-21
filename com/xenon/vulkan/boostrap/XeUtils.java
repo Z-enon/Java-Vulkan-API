@@ -7,6 +7,9 @@ import java.nio.ByteBuffer;
 import java.util.Collection;
 import java.util.function.Function;
 
+import static org.lwjgl.system.MemoryUtil.NULL;
+import static org.lwjgl.vulkan.VK10.VK_SUCCESS;
+
 /**
  * @author Zenon
  */
@@ -39,4 +42,41 @@ public class XeUtils {
         return pb.flip();
     }
 
+    // cuda style checks
+
+    /**
+     * Checks whether the function succeeded.
+     * Literally
+     * <code>if (func_result != VK_SUCCESS) throw RuntimeException</code>
+     * @param func_result the function exit code
+     * @param log the log to print
+     */
+    public static void checkVK(int func_result, String log) {
+        if (func_result != VK_SUCCESS)
+            throw VkError.log(log);
+    }
+
+    /**
+     * Checks whether the pointer is valid.
+     * Literally
+     * <code>if (ptr == NULL) throw RuntimeException</code>
+     * @param ptr the pointer
+     * @param log the log to print
+     */
+    public static void checkPtr(long ptr, String log) {
+        if (ptr == NULL)
+            throw VkError.log(log);
+    }
+
+    /**
+     * Checks whether the count is 0.
+     * Literally
+     * <code>if (count == 0) throw RuntimeException</code>
+     * @param count the count
+     * @param log the log to print
+     */
+    public static void checkCount(int count, String log) {
+        if (count == 0)
+            throw VkError.log(log);
+    }
 }

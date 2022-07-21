@@ -8,6 +8,7 @@ import java.nio.IntBuffer;
 import java.util.Collection;
 import java.util.Set;
 
+import static com.xenon.vulkan.boostrap.XeUtils.checkVK;
 import static java.util.stream.Collectors.toSet;
 import static org.lwjgl.glfw.GLFWVulkan.glfwGetRequiredInstanceExtensions;
 import static org.lwjgl.system.MemoryStack.stackPush;
@@ -77,8 +78,7 @@ public final class VkInstances {
             // instance creation
             PointerBuffer ptr = stack.mallocPointer(1);
 
-            if(vkCreateInstance(createInfo, callbacks, ptr) != VK_SUCCESS)
-                throw VkError.log("Failed to create a VkInstance");
+            checkVK(vkCreateInstance(createInfo, callbacks, ptr), "Failed to create a VkInstance");
 
             return new VkInstance(ptr.get(0), createInfo);
         }
